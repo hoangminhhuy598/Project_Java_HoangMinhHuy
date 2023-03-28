@@ -6,6 +6,7 @@ import model.Departments;
 import model.Employees;
 import service.AuthenService;
 
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Scanner;
 
@@ -36,6 +37,7 @@ public class App {
         System.out.println("11. Thêm nhân viên vào phòng ban");
         System.out.println("12. Xóa nhân viên khỏi phòng ban");
         System.out.println("13. Tính thuế thu nhập cá nhân cho nhân viên");
+        System.out.println("0. Thoát !!!");
     }
 
     //quản lý phòng ban
@@ -213,10 +215,64 @@ public class App {
     private static void option13(Scanner in)
     {
         Employees e = new Employees();
-        System.out.println("Tính thuế thu nhập cá nhân cho nhân viên");
-        System.out.print("Nhập Vào Mã Nhân Viên Cần Tính Thuế Thu Nhập : ");
+        System.out.print("\tNhập mã nhân viên: ");
         String employees_id=in.nextLine();
-        employeesDao.tinhthuethunhap(employees_id);
+        while(employeesDao.getById(employees_id)==null) {
+            System.out.print("\tMã nhân viên chưa tồn tại, vui lòng nhập lại mã NV: ");
+            employees_id =in.nextLine();
+        }
+        e.setEmployees_id(employees_id);
+        String leftAlignFormat = " %-12s  %-25s  %-2s %n";
+        System.out.format(" Mã nhân viên  Tên nhân viên              Lương%n");
+        Employees employees = employeesDao.getById(employees_id);
+        System.out.format(leftAlignFormat, employees.getEmployees_id(),
+                employees.getEmployees_name(),employeesDao.getById(employees_id).getSalary());
+
+        DecimalFormat formatter = new DecimalFormat("###,###,###");
+
+        System.out.print("\tNhập số người phụ thuộc: ");
+        int soNguoiPT = in.nextInt();
+
+        //Mức đóng: BHXH (8%), BHYT (1.5%), BHTN (1%)
+        //Bảo hiểm bắt buộc = luongBh x 8% + luongBh x 1.5% + luongBh x 1%
+        double BHBB = (employees.getSalary() * 0.08) + (employees.getSalary() * 0.015) + (employees.getSalary() * 0.01);
+        System.out.println("\t-Bảo hiểm bắt buộc = "+formatter.format(BHBB)+" VNĐ");
+
+        // giảm trừ bản thân : 11000000
+        int GTBT = 11000000;
+        System.out.println("\t-Giảm trừ bản thân = "+formatter.format(GTBT)+" VNĐ");
+
+        //Giảm trừ người phụ thuộc = soNguoiPT x 4,400,000 = mặc định
+        int GTNPT = soNguoiPT * 4400000;
+        System.out.println("\t-Giảm trừ người phụ thuộc = "+formatter.format(GTNPT)+" VNĐ");
+
+        //Thu nhập tính thuế = lương - BHBB - GTBT - GTNPT;
+        double luong = employeesDao.getById(employees_id).getSalary();
+        double TNTT = luong - BHBB - GTBT - GTNPT;
+        System.out.println("\t-Thu nhập tính thuế = "+formatter.format(TNTT)+" VNĐ");
+
+        // Thuế thu nhập cá nhân phải nộp
+        double TTNCN;
+        if (luong <= 5000000 ){
+            TTNCN = TNTT * 0.05;
+        }else if (luong <= 10000000){
+            TTNCN = (TNTT * 0.1) - 0.25;
+        }else if (luong <= 18000000){
+            TTNCN = (TNTT * 0.15) - 0.75;
+        }else if (luong <= 32000000){
+            TTNCN = (TNTT * 0.2) - 1.65;
+        }else if (luong <= 52000000){
+            TTNCN = (TNTT * 0.25) - 3.25;
+        }else if (luong <= 80000000){
+            TTNCN = (TNTT * 0.3) - 5.85;
+        }else {
+            TTNCN = (TNTT * 0.35) - 9.85;
+        }
+        if (TTNCN > 0){
+            System.out.println("\t-Thuế thu nhập cá nhân phải nộp = "+formatter.format(TTNCN)+" VNĐ");
+        }else {
+            System.out.println("\t-Thuế thu nhập cá nhân phải nộp = 0 VNĐ");
+        }
     }
 
     public static void main(String[] args) {
@@ -248,7 +304,11 @@ public class App {
         do {
             mainMenu();
             System.out.print("Nhập lựa chọn: ");
-            option = Integer.parseInt(in.nextLine());
+            String nextLine = in.nextLine();
+            if(!nextLine.equalsIgnoreCase("")){
+                option = Integer.parseInt(nextLine);
+
+            }
             // Làm thêm phần try-catch khi người dùng nhập lỗi
             if (option < 1 || option > 14) {
                 System.out.println("Vui lòng nhập lại!");

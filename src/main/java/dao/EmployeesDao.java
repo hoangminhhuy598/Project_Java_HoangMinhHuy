@@ -59,7 +59,7 @@ public class EmployeesDao {
 
      // Thêm 1 nhân viên vào database
     public void insert(Employees e) {
-        final String sql = String.format("INSERT INTO `employees` VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s',`%s`,%d)",
+        final String sql = String.format("INSERT INTO `employees` VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s',%d)",
                 e.getEmployees_id(),
                 e.getEmployees_name(),
                 e.getBirth_date(),
@@ -167,8 +167,8 @@ public class EmployeesDao {
             System.out.println("Không tồn tại nhân viên có id = " + employees_id);
             return;
         }
-        final String sql = String.format("UPDATE employees SET `employees_id`='%s',`employees_name`='%s',`birth_date`='%s',`address`='%s',`email`='%s',`phone_number`='%s', `hire_date`, `job_position`, `salary`,`departments_id`, `manager_id`  WHERE `employees_id`='%s' " ,
-                e.getEmployees_id(), e.getEmployees_name(), e.getBirth_date(), e.getAddress(), e.getEmail(),e.getPhone_number(),e.getHire_date(),e.getJob_position(),e.getSalary(),e.getDepartments_id(),e.getManager_id(), employees_id
+        final String sql = String.format("UPDATE employees SET `employees_id`='%s',`employees_name`='%s',`birth_date`='%s',`address`='%s',`email`='%s',`phone_number`='%s', `hire_date`='%s', `job_position`='%s', `salary`='%s', `manager_id`='%s', `departments_id`=%d  WHERE `employees_id`='%s' " ,
+                e.getEmployees_id(), e.getEmployees_name(), e.getBirth_date(), e.getAddress(), e.getEmail(),e.getPhone_number(),e.getHire_date(),e.getJob_position(),e.getSalary(),e.getManager_id(),e.getDepartments_id(), employees_id
         );
 
         System.out.println(sql);
@@ -237,7 +237,7 @@ public class EmployeesDao {
             System.out.println("Không tồn tại nhân viên có id = " + employees_id);
             return;
         }
-        final String sql = String.format("UPDATE employees SET `departments_id`='NULL' WHERE `employees_id` LIKE '%s' " , employees_id);
+        final String sql = String.format("UPDATE employees SET `departments_id`=NULL WHERE `employees_id` LIKE '%s' " , employees_id);
 
         try{
             Connection conn = MyConnection.getConnection();
